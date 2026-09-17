@@ -1,0 +1,29 @@
+// 1. Descobre os containers rodando
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// 2. Renomeia a label do Docker para o Grafana ler bonito
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "(.*)"
+    target_label  = "container"
+  }
+}
+
+// 3. Pega os logs usando os targets formatados
+loki.source.docker "default" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.containers.output
+  forward_to = [loki.write.local.receiver]
+}
+
+// 4. Envia pro banco de dados Loki
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

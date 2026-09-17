@@ -1,0 +1,42 @@
+groups:
+  - name: bff_alerts
+    rules:
+      - alert: AltaTaxaDeErrosHTTP
+        expr: rate(http_requests_total{status_code=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Taxa de erro acima de 5% no BFF"
+
+      - alert: LatenciaElevadaP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Latência P95 ultrapassou 500ms"
+
+      - alert: CacheRedisIneficiente
+        expr: sum(rate(bff_redis_cache_total{status="hit"}[5m])) / sum(rate(bff_redis_cache_total[5m])) < 0.7
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Cache Hit Rate abaixo de 70%"
+
+      - alert: APIExternaIndisponivel
+        expr: rate(bff_external_api_requests_total{status="error"}[2m]) > 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Falha de comunicação com API Externa"
+
+      - alert: UsoCriticoMemoriaHeap
+        expr: nodejs_heap_size_used_bytes / nodejs_heap_size_total_bytes > 0.8
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso de Memória Heap acima de 80%"

@@ -1,0 +1,60 @@
+server:
+  port: ${SERVER_PORT:8081}
+
+spring:
+  application:
+    name: iam-service
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/keycloak}
+    username: ${SPRING_DATASOURCE_USERNAME:keycloak}
+    password: ${SPRING_DATASOURCE_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  rabbitmq:
+    host: ${SPRING_RABBITMQ_HOST:rabbitmq-broker}
+    port: ${SPRING_RABBITMQ_PORT:5672}
+    username: ${SPRING_RABBITMQ_USERNAME:admin}
+    password: ${SPRING_RABBITMQ_PASSWORD:admin123}
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # URL usada apenas para conferir a assinatura do token
+          issuer-uri: http://localhost:8080/realms/sefa
+          # URL usada para baixar as chaves públicas pela rede interna do Docker
+          jwk-set-uri: http://keycloak:8080/realms/sefa/protocol/openid-connect/certs
+    
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka-broker:29092}
+    consumer:
+      group-id: ${SPRING_KAFKA_CONSUMER_GROUP_ID:iam-service-group}
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+  app:
+    frontend-url: ${FRONTEND_URL:http://localhost:5174}
+
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health,prometheus
+    endpoint:
+      health:
+        show-details: always
+    metrics:
+      tags:
+        application: ${spring.application.name}
