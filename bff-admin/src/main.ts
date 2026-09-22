@@ -6,7 +6,7 @@ import { RedisStore } from 'connect-redis';
 import { createClient } from 'redis';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger } from 'nestjs-pino';
-import { GlobalExceptionFilter } from './common/filters/global-exeption.filter'; // Mantive o nome do seu arquivo original
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter'; 
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
